@@ -16,21 +16,29 @@ gcloud compute ssh controller-0
 
 ## Bootstrapping an etcd Cluster Member
 
+> Run the below commands on each controller node: `controller-0`, `controller-1`, and `controller-2`.
+
 ### Download and Install the etcd Binaries
 
 Download the official etcd release binaries from the [coreos/etcd](https://github.com/coreos/etcd) GitHub project:
 
 ```
-wget -q --show-progress --https-only --timestamping \
-  "https://github.com/coreos/etcd/releases/download/v3.3.9/etcd-v3.3.9-linux-amd64.tar.gz"
+{
+  ETCD_VER=v3.3.12
+  DOWNLOAD_URL=https://storage.googleapis.com/etcd
+
+  wget -q --show-progress --https-only --timestamping \
+    "${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz"
+}
 ```
 
 Extract and install the `etcd` server and the `etcdctl` command line utility:
 
 ```
 {
-  tar -xvf etcd-v3.3.9-linux-amd64.tar.gz
-  sudo mv etcd-v3.3.9-linux-amd64/etcd* /usr/local/bin/
+  tar -xvf etcd-${ETCD_VER}-linux-amd64.tar.gz
+  sudo mv etcd-${ETCD_VER}-linux-amd64/etcd* /usr/local/bin/
+  rm -rf etcd-${ETCD_VER}-linux-amd64*
 }
 ```
 
