@@ -66,7 +66,7 @@ kubernetes-the-hard-way-allow-external  kubernetes-the-hard-way  INGRESS    1000
 kubernetes-the-hard-way-allow-internal  kubernetes-the-hard-way  INGRESS    1000      tcp,udp,icmp
 ```
 
-### Kubernetes Public IP Address
+### Kubernetes Static Public IP Address
 
 Allocate a static IP address that will be attached to the external load balancer fronting the Kubernetes API Servers:
 
