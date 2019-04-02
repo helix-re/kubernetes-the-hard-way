@@ -52,8 +52,6 @@ gcloud compute firewall-rules create kubernetes-the-hard-way-allow-external \
   --source-ranges 0.0.0.0/0
 ```
 
-> An [external load balancer](https://cloud.google.com/compute/docs/load-balancing/network/) will be used to expose the Kubernetes API Servers to remote clients.
-
 List the firewall rules in the `kubernetes-the-hard-way` VPC network:
 
 ```
@@ -97,6 +95,8 @@ The compute instances in this lab will be provisioned using [Ubuntu Server](http
 ### Kubernetes Controllers
 
 Create three compute instances which will host the Kubernetes control plane:
+
+> TODO: Instead of scopes, use a service account. Use Terraform
 
 ```
 for i in 0 1 2; do
@@ -169,43 +169,7 @@ Test SSH access to the `controller-0` compute instances:
 gcloud compute ssh controller-0
 ```
 
-If this is your first time connecting to a compute instance SSH keys will be generated for you. Enter a passphrase at the prompt to continue:
-
-```
-WARNING: The public SSH key file for gcloud does not exist.
-WARNING: The private SSH key file for gcloud does not exist.
-WARNING: You do not have an SSH key for gcloud.
-WARNING: SSH keygen will be executed to generate a key.
-Generating public/private rsa key pair.
-Enter passphrase (empty for no passphrase):
-Enter same passphrase again:
-```
-
-At this point the generated SSH keys will be uploaded and stored in your project:
-
-```
-Your identification has been saved in /home/$USER/.ssh/google_compute_engine.
-Your public key has been saved in /home/$USER/.ssh/google_compute_engine.pub.
-The key fingerprint is:
-SHA256:nz1i8jHmgQuGt+WscqP5SeIaSy5wyIJeL71MuV+QruE $USER@$HOSTNAME
-The key's randomart image is:
-+---[RSA 2048]----+
-|                 |
-|                 |
-|                 |
-|        .        |
-|o.     oS        |
-|=... .o .o o     |
-|+.+ =+=.+.X o    |
-|.+ ==O*B.B = .   |
-| .+.=EB++ o      |
-+----[SHA256]-----+
-Updating project ssh metadata...-Updated [https://www.googleapis.com/compute/v1/projects/$PROJECT_ID].
-Updating project ssh metadata...done.
-Waiting for SSH key to propagate.
-```
-
-After the SSH keys have been updated you'll be logged into the `controller-0` instance:
+You'll be logged into the `controller-0` instance:
 
 ```
 Welcome to Ubuntu 18.04 LTS (GNU/Linux 4.15.0-1006-gcp x86_64)
