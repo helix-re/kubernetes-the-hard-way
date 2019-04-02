@@ -62,8 +62,8 @@ gcloud compute firewall-rules list --filter="network:kubernetes-network"
 
 ```
 NAME                                    NETWORK                  DIRECTION  PRIORITY  ALLOW                 DENY
-kubernetes-network-allow-external  kubernetes-the-hard-way  INGRESS    1000      tcp:22,tcp:6443,icmp
-kubernetes-network-allow-internal  kubernetes-the-hard-way  INGRESS    1000      tcp,udp,icmp
+kubernetes-network-allow-external  kubernetes-network  INGRESS    1000      tcp:22,tcp:6443,icmp
+kubernetes-network-allow-internal  kubernetes-network  INGRESS    1000      tcp,udp,icmp
 ```
 
 ### Kubernetes Static Public IP Address
