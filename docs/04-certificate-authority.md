@@ -88,7 +88,7 @@ cat > admin-csr.json <<EOF
       "C": "US",
       "L": "Portland",
       "O": "system:masters",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "CA",
       "ST": "Oregon"
     }
   ]
@@ -132,7 +132,7 @@ cat > ${instance}-csr.json <<EOF
       "C": "US",
       "L": "Portland",
       "O": "system:nodes",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "CA",
       "ST": "Oregon"
     }
   ]
@@ -142,8 +142,12 @@ EOF
 EXTERNAL_IP=$(gcloud compute instances describe ${instance} \
   --format 'value(networkInterfaces[0].accessConfigs[0].natIP)')
 
+echo &EXTERNAL_IP
+
 INTERNAL_IP=$(gcloud compute instances describe ${instance} \
   --format 'value(networkInterfaces[0].networkIP)')
+
+echo $INTERNAL_IP
 
 cfssl gencert \
   -ca=ca.pem \
@@ -185,7 +189,7 @@ cat > kube-controller-manager-csr.json <<EOF
       "C": "US",
       "L": "Portland",
       "O": "system:kube-controller-manager",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "CA",
       "ST": "Oregon"
     }
   ]
@@ -229,7 +233,7 @@ cat > kube-proxy-csr.json <<EOF
       "C": "US",
       "L": "Portland",
       "O": "system:node-proxier",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "CA",
       "ST": "Oregon"
     }
   ]
@@ -272,7 +276,7 @@ cat > kube-scheduler-csr.json <<EOF
       "C": "US",
       "L": "Portland",
       "O": "system:kube-scheduler",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "CA",
       "ST": "Oregon"
     }
   ]
@@ -299,14 +303,14 @@ kube-scheduler.pem
 
 ### The Kubernetes API Server Certificate
 
-The `kubernetes-the-hard-way` static IP address will be included in the list of subject alternative names for the Kubernetes API Server certificate. This will ensure the certificate can be validated by remote clients.
+The `kubernetes-controller-static-ip` static IP address will be included in the list of subject alternative names for the Kubernetes API Server certificate. This will ensure the certificate can be validated by remote clients.
 
 Generate the Kubernetes API Server certificate and private key:
 
 ```
 {
 
-KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-hard-way \
+KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-controller-static-ip \
   --region $(gcloud config get-value compute/region) \
   --format 'value(address)')
 
@@ -322,7 +326,7 @@ cat > kubernetes-csr.json <<EOF
       "C": "US",
       "L": "Portland",
       "O": "Kubernetes",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "CA",
       "ST": "Oregon"
     }
   ]
@@ -368,7 +372,7 @@ cat > service-account-csr.json <<EOF
       "C": "US",
       "L": "Portland",
       "O": "Kubernetes",
-      "OU": "Kubernetes The Hard Way",
+      "OU": "CA",
       "ST": "Oregon"
     }
   ]
