@@ -14,19 +14,19 @@ The Kubernetes [networking model](https://kubernetes.io/docs/concepts/cluster-ad
 
 In this section a dedicated [Virtual Private Cloud](https://cloud.google.com/compute/docs/networks-and-firewalls#networks) (VPC) network will be setup to host the Kubernetes cluster.
 
-Create the `kubernetes-the-hard-way` custom VPC network:
+Create the `kubernetes-network` custom VPC network:
 
 ```
-gcloud compute networks create kubernetes-the-hard-way --subnet-mode custom
+gcloud compute networks create kubernetes-network --subnet-mode custom
 ```
 
 A [subnet](https://cloud.google.com/compute/docs/vpc/#vpc_networks_and_subnets) must be provisioned with an IP address range large enough to assign a private IP address to each node in the Kubernetes cluster.
 
-Create the `kubernetes` subnet in the `kubernetes-the-hard-way` VPC network:
+Create the `kubernetes-subnet` subnet in the `kubernetes-network` VPC network:
 
 ```
-gcloud compute networks subnets create kubernetes \
-  --network kubernetes-the-hard-way \
+gcloud compute networks subnets create kubernetes-subnet \
+  --network kubernetes-network \
   --range 10.240.0.0/24
 ```
 
@@ -37,33 +37,33 @@ gcloud compute networks subnets create kubernetes \
 Create a firewall rule that allows internal communication across all protocols:
 
 ```
-gcloud compute firewall-rules create kubernetes-the-hard-way-allow-internal \
+gcloud compute firewall-rules create kubernetes-network-allow-internal \
   --allow tcp,udp,icmp \
-  --network kubernetes-the-hard-way \
+  --network kubernetes-network \
   --source-ranges 10.240.0.0/24,10.200.0.0/16
 ```
 
 Create a firewall rule that allows external SSH, ICMP, and HTTPS:
 
 ```
-gcloud compute firewall-rules create kubernetes-the-hard-way-allow-external \
+gcloud compute firewall-rules create kubernetes-network-allow-external \
   --allow tcp:22,tcp:6443,icmp \
-  --network kubernetes-the-hard-way \
+  --network kubernetes-network \
   --source-ranges 0.0.0.0/0
 ```
 
-List the firewall rules in the `kubernetes-the-hard-way` VPC network:
+List the firewall rules in the `kubernetes-network` VPC network:
 
 ```
-gcloud compute firewall-rules list --filter="network:kubernetes-the-hard-way"
+gcloud compute firewall-rules list --filter="network:kubernetes-network"
 ```
 
 > output
 
 ```
 NAME                                    NETWORK                  DIRECTION  PRIORITY  ALLOW                 DENY
-kubernetes-the-hard-way-allow-external  kubernetes-the-hard-way  INGRESS    1000      tcp:22,tcp:6443,icmp
-kubernetes-the-hard-way-allow-internal  kubernetes-the-hard-way  INGRESS    1000      tcp,udp,icmp
+kubernetes-network-allow-external  kubernetes-the-hard-way  INGRESS    1000      tcp:22,tcp:6443,icmp
+kubernetes-network-allow-internal  kubernetes-the-hard-way  INGRESS    1000      tcp,udp,icmp
 ```
 
 ### Kubernetes Static Public IP Address
@@ -71,21 +71,21 @@ kubernetes-the-hard-way-allow-internal  kubernetes-the-hard-way  INGRESS    1000
 Allocate a static IP address that will be attached to the external load balancer fronting the Kubernetes API Servers:
 
 ```
-gcloud compute addresses create kubernetes-the-hard-way \
+gcloud compute addresses create kubernetes-controller-static-ip \
   --region $(gcloud config get-value compute/region)
 ```
 
-Verify the `kubernetes-the-hard-way` static IP address was created in your default compute region:
+Verify the `kubernetes-controller-static-ip` static IP address was created in your default compute region:
 
 ```
-gcloud compute addresses list --filter="name=('kubernetes-the-hard-way')"
+gcloud compute addresses list --filter="name=('kubernetes-controller-static-ip')"
 ```
 
 > output
 
 ```
 NAME                     REGION    ADDRESS        STATUS
-kubernetes-the-hard-way  us-west1  XX.XXX.XXX.XX  RESERVED
+kubernetes-controller-static-ip  us-west1  XX.XXX.XXX.XX  RESERVED
 ```
 
 ## Compute Instances
@@ -109,8 +109,8 @@ for i in 0 1 2; do
     --machine-type n1-standard-1 \
     --private-network-ip 10.240.0.1${i} \
     --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring \
-    --subnet kubernetes \
-    --tags kubernetes-the-hard-way,controller
+    --subnet kubernetes-subnet \
+    --tags kubernetes-network,controller
 done
 ```
 
@@ -134,8 +134,8 @@ for i in 0 1 2; do
     --metadata pod-cidr=10.200.${i}.0/24 \
     --private-network-ip 10.240.0.2${i} \
     --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring \
-    --subnet kubernetes \
-    --tags kubernetes-the-hard-way,worker
+    --subnet kubernetes-subnet \
+    --tags kubernetes-network,worker
 done
 ```
 
@@ -151,12 +151,12 @@ gcloud compute instances list
 
 ```
 NAME          ZONE        MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP     STATUS
-controller-0  us-west1-c  n1-standard-1               10.240.0.10  XX.XXX.XXX.XXX  RUNNING
-controller-1  us-west1-c  n1-standard-1               10.240.0.11  XX.XXX.X.XX     RUNNING
-controller-2  us-west1-c  n1-standard-1               10.240.0.12  XX.XXX.XXX.XX   RUNNING
-worker-0      us-west1-c  n1-standard-1               10.240.0.20  XXX.XXX.XXX.XX  RUNNING
-worker-1      us-west1-c  n1-standard-1               10.240.0.21  XX.XXX.XX.XXX   RUNNING
-worker-2      us-west1-c  n1-standard-1               10.240.0.22  XXX.XXX.XX.XX   RUNNING
+controller-0  us-west1-a  n1-standard-1               10.240.0.10  XX.XXX.XXX.XXX  RUNNING
+controller-1  us-west1-a  n1-standard-1               10.240.0.11  XX.XXX.X.XX     RUNNING
+controller-2  us-west1-a  n1-standard-1               10.240.0.12  XX.XXX.XXX.XX   RUNNING
+worker-0      us-west1-a  n1-standard-1               10.240.0.20  XXX.XXX.XXX.XX  RUNNING
+worker-1      us-west1-a  n1-standard-1               10.240.0.21  XX.XXX.XX.XXX   RUNNING
+worker-2      us-west1-a  n1-standard-1               10.240.0.22  XXX.XXX.XX.XX   RUNNING
 ```
 
 ## Configuring SSH Access
@@ -172,11 +172,7 @@ gcloud compute ssh controller-0
 You'll be logged into the `controller-0` instance:
 
 ```
-Welcome to Ubuntu 18.04 LTS (GNU/Linux 4.15.0-1006-gcp x86_64)
-
-...
-
-Last login: Sun May 13 14:34:27 2018 from XX.XXX.XXX.XX
+Welcome to Ubuntu 18.04.2 LTS (GNU/Linux 4.15.0-1028-gcp x86_64)
 ```
 
 Type `exit` at the prompt to exit the `controller-0` compute instance:
