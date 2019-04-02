@@ -18,7 +18,7 @@ Kubernetes The Hard Way guides you through bootstrapping a highly available Kube
 * [containerd Container Runtime](https://github.com/containerd/containerd) v1.2.4 (upgrade now)
 * [gVisor](https://github.com/google/gvisor) 50c283b9f56bb7200938d9e207355f05f79f0d17 - Do we really need this?
 * [CNI Container Networking](https://github.com/containernetworking/cni) v0.6.0 (this is the latest)
-* [etcd](https://github.com/coreos/etcd) v3.3.12 (upgrade now)
+* [etcd](https://github.com/coreos/etcd) v3.3.12
 * [CoreDNS](https://github.com/coredns/coredns) v1.4.0 (upgrade now)
 
 ## Labs
